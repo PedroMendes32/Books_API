@@ -1,4 +1,5 @@
-﻿using Books.Database;
+﻿using Books.API.Requests;
+using Books.Database;
 using Books.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,9 +43,9 @@ namespace Books.API.Endpoints
             });
 
 
-            app.MapPost("/Book", ([FromServices]DataAccessLayer<Book> dataAccessLayer, [FromBody]Book book) =>
+            app.MapPost("/Book", ([FromServices]DataAccessLayer<Book> dataAccessLayer, [FromBody]BookRequest book) =>
             {
-                dataAccessLayer.Add(book);
+                dataAccessLayer.Add(ConvertBook.RequestToEntity(book));
                 return Results.Ok();
             });
 
@@ -55,8 +56,7 @@ namespace Books.API.Endpoints
 
                 entity.Name = book.Name;
                 entity.Description = book.Description;
-                entity.Created = book.Created;
-                entity.Title = book.Title;
+                entity.YearCreated = book.YearCreated;
                 entity.Authors = book.Authors;
                 entity.Publisher = book.Publisher;
                 
