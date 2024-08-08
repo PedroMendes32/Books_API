@@ -41,11 +41,37 @@ namespace Books.API.Endpoints
                 booksPublisher = books.Where(x => x.Publisher != null && x.Publisher.Name == publisher).ToList();
                 return Results.Ok(booksPublisher);
             });
-
-
-            app.MapPost("/Book", ([FromServices]DataAccessLayer<Book> dataAccessLayer, [FromBody]BookRequest book) =>
+            
+            app.MapPost("/Book", ([FromServices]DataAccessLayer<Book> bookDAL,[FromServices]DataAccessLayer<Author> authorDAL,[FromServices]DataAccessLayer<Publisher> publisherDAL,[FromBody]BookRequest book) =>
             {
-                dataAccessLayer.Add(ConvertBook.RequestToEntity(book));
+                var bookEntity = ConvertBook.RequestToEntity(book);
+
+                List<Author> authorsInDatabase = new();
+                foreach (var author in book.authorsName)
+                {
+                    Author? authorObj = authorDAL.GetEntityByFilter(x => x.Name.ToUpper() == author.ToUpper());
+                    if (authorObj != null)
+                    {
+                        authorsInDatabase.Add(authorObj);
+                    }
+                    else
+                    {
+                        authorsInDatabase.Add(new Author() { Name = author});
+                    }
+                }
+                bookEntity.Authors = authorsInDatabase;
+
+                Publisher? publisher = publisherDAL.GetEntityByFilter(x => x.Name.ToUpper() == book.publisherName.ToUpper());
+                if (publisher != null)
+                {
+                    bookEntity.Publisher = publisher;
+                }
+                else
+                {
+                    bookEntity.Publisher = new Publisher() { Name = book.publisherName };
+                }
+
+                bookDAL.Add(bookEntity);
                 return Results.Ok();
             });
 
