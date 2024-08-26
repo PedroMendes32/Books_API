@@ -23,6 +23,8 @@ namespace Books.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Publisher>().HasMany(x => x.Books)
+                .WithOne(y => y.Publisher);
         }
     }
 }
